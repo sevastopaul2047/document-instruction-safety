@@ -15,3 +15,14 @@ venv/
 .ipynb_checkpoints/
 .vscode/
 .DS_Store
+
+# Evaluation artifacts / package build metadata
+work/
+*.egg-info/
+build/
+dist/
+.cache/
+results/*
+!results/README.md
+*.safetensors
+*.bin

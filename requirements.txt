@@ -1,0 +1,5 @@
+# Source APIs inspected and installed on Python 3.12.14; immutable upstream revisions.
+curatorkit @ git+https://github.com/Lexsi-Labs/CuratorKIT.git@ed45ae3489bfb6ee12c969e5d07e0309b758e829
+auditkit @ git+https://github.com/Lexsi-Labs/AuditKIT.git@556eb4852d515391294203232ca3c90bdd48251d
+PyYAML==6.0.3
+pytest==9.2.0
