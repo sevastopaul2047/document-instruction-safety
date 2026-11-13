@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+
+# Local outputs and editor files
+.ipynb_checkpoints/
+.vscode/
+.DS_Store
