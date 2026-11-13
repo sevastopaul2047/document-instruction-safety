@@ -1,0 +1,8 @@
+seed: 42
+model_id: CohereLabs/tiny-aya-global
+# Resolve once on the Hub at runtime and save the immutable SHA in metadata.
+revision: main
+max_new_tokens: 192
+max_input_tokens: 4096
+load_in_4bit: true
+system_role: auto
