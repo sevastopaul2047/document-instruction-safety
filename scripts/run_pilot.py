@@ -12,7 +12,7 @@ from lexsi_pilot.prepare_data import ROOT, build_cases, curate, load_selection
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Lexsi pilot: mock outputs are synthetic, never Tiny Aya findings"
+        description="Generate a new pilot (mock outputs are synthetic). For saved outputs use scripts/rescore_pilot.py."
     )
     parser.add_argument("--model", choices=["mock", "transformers"], default="mock")
     parser.add_argument("--data", choices=["piarena", "synthetic"], default="piarena")
