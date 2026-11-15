@@ -1,20 +1,31 @@
-# Python
+# Python & Virtual Environments
 __pycache__/
 *.py[cod]
+*$py.class
 .venv/
 venv/
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
 
 # Secrets and local configuration
 .env
 .env.*
 !.env.example
 *.key
+*.pem
+id_rsa*
 
 # Local outputs and editor files
 .ipynb_checkpoints/
 .vscode/
+.idea/
 .DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
 
 # Evaluation artifacts / package build metadata
 work/
@@ -24,5 +35,22 @@ dist/
 .cache/
 results/*
 !results/README.md
+lexsi_real_pilot/
+lexis_real_pilot/
+reviews.csv
+reviews_*.csv
+
+# Model weights and checkpoints
 *.safetensors
 *.bin
+*.pt
+*.pth
+*.onnx
+*.h5
+checkpoints/
+
+# Colab / Downloaded run archives & temporary debug dumps
+*.zip
+*.tar.gz
+*.tgz
+debug-*/

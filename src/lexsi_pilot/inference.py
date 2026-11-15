@@ -134,7 +134,7 @@ class TransformersModel:
             dtype=str(self.dtype),
             config=config,
             model_type=self.model.config.model_type,
-            device_map=str(self.model.hf_device_map),
+            device_map=str(getattr(self.model, "hf_device_map", None)),
             do_sample=False,
             num_beams=1,
             quantization="nf4" if config["load_in_4bit"] else None,

@@ -22,7 +22,7 @@ from lexsi_pilot.reviews import import_reviews, score_response
 
 @pytest.fixture
 def case():
-    return json.loads((ROOT / "data/fixtures/synthetic.json").read_text())[0]
+    return json.loads((ROOT / "data/fixtures/synthetic.json").read_text(encoding="utf-8"))[0]
 
 
 @pytest.mark.parametrize(
@@ -116,7 +116,7 @@ def test_rate_unknown_bounds():
 
 
 def test_cpu_end_to_end(tmp_path):
-    cases = curate(json.loads((ROOT / "data/fixtures/synthetic.json").read_text()))
+    cases = curate(json.loads((ROOT / "data/fixtures/synthetic.json").read_text(encoding="utf-8")))
     result = run(cases, MockModel(), tmp_path / "run", {"seed": 42})
     assert result["synthetic"] is True
     assert result["research_findings"] is False
@@ -126,7 +126,7 @@ def test_cpu_end_to_end(tmp_path):
     assert groups["injection"]["attack_success"]["rate"] == 1
     assert groups["injection"]["task_accuracy"]["rate"] == 0
     assert groups["defense"]["attack_success"]["rate"] == 0
-    audit = json.loads((tmp_path / "run/auditkit.json").read_text())
+    audit = json.loads((tmp_path / "run/auditkit.json").read_text(encoding="utf-8"))
     assert len(audit["predictions"]) == 12
     assert audit["headline"]["task_accuracy"] == pytest.approx(2 / 3)
     assert audit["headline"]["attack_success"] == 0.5
@@ -150,7 +150,7 @@ def test_auditkit_unknowns_excluded_and_paired_failures(tmp_path, case):
             )
 
     result = run(curate([case]), EdgeModel(), tmp_path / "edge", {"seed": 42})
-    audit = json.loads((tmp_path / "edge/auditkit.json").read_text())
+    audit = json.loads((tmp_path / "edge/auditkit.json").read_text(encoding="utf-8"))
     assert audit["unscored"]["task_accuracy"]["unknown"] == 1
     assert audit["headline"]["task_accuracy"] == 0
     assert result["metrics"]["paired"]["injection"]["baseline_solved"] == 0
@@ -161,7 +161,7 @@ def test_auditkit_unknowns_excluded_and_paired_failures(tmp_path, case):
         ]
         is None
     )
-    assert "Maybe fourteen" in (tmp_path / "edge/manual_review.csv").read_text()
+    assert "Maybe fourteen" in (tmp_path / "edge/manual_review.csv").read_text(encoding="utf-8")
 
 
 class Tokenizer:
@@ -207,7 +207,9 @@ def test_explicit_system_and_broken_templates_fail(case):
 
 def test_snapshot_hash():
 
-    provenance = json.loads((ROOT / "data/fixtures/provenance.json").read_text())
+    provenance = json.loads(
+        (ROOT / "data/fixtures/provenance.json").read_text(encoding="utf-8")
+    )
     assert (
         provenance["snapshot_sha256"]
         == hashlib.sha256(
@@ -235,7 +237,9 @@ def test_refresh_rejects_drift(monkeypatch):
 
 def test_auditkit_directions_and_synthetic_labels(tmp_path, case):
     run(curate([case]), MockModel(), tmp_path / "directions", {"seed": 42})
-    report = json.loads((tmp_path / "directions/auditkit.json").read_text())
+    report = json.loads(
+        (tmp_path / "directions/auditkit.json").read_text(encoding="utf-8")
+    )
     assert report["metadata"]["execution"]["synthetic"] is True
     assert "synthetic_mock" in report["tags"]
     scores = report["predictions"][1]["metadata"]["scores"]
@@ -264,7 +268,9 @@ def test_generation_error_retains_unknowns(tmp_path, case):
     )
     rows = [
         json.loads(line)
-        for line in (tmp_path / "broken/responses.jsonl").read_text().splitlines()
+        for line in (tmp_path / "broken/responses.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
     ]
     assert len(rows) == 3
     assert all(r["error"] == "RuntimeError: fixture generation failure" for r in rows)
@@ -283,7 +289,7 @@ def test_benign_control_excluded_from_asr(tmp_path, case):
     groups = summary["metrics"]["by_condition"]
     assert groups["injection"]["attack_success"]["total"] == 0
     assert groups["injection"]["benign_overrefusal"]["rate"] == 1
-    audit = json.loads((tmp_path / "benign/auditkit.json").read_text())
+    audit = json.loads((tmp_path / "benign/auditkit.json").read_text(encoding="utf-8"))
     assert audit["unscored"]["attack_success"]["not_tested"] == 3
 
 
@@ -340,9 +346,9 @@ def saved_run(tmp_path, case):
                 task_accuracy="legacy label",
             )
         )
-    (source / "cases.json").write_text(json.dumps(cases))
+    (source / "cases.json").write_text(json.dumps(cases), encoding="utf-8")
     (source / "responses.jsonl").write_text(
-        "".join(json.dumps(r) + "\n" for r in responses)
+        "".join(json.dumps(r) + "\n" for r in responses), encoding="utf-8"
     )
     (source / "metadata.json").write_text(
         json.dumps(
@@ -352,19 +358,22 @@ def saved_run(tmp_path, case):
                 "model": {"backend": "saved fixture"},
                 "original": "retain exactly",
             }
-        )
+        ),
+        encoding="utf-8",
     )
-    (source / "old-report.txt").write_text("Original findings, do not alter")
+    (source / "old-report.txt").write_text(
+        "Original findings, do not alter", encoding="utf-8"
+    )
     return source, cases, responses
 
 
 def template_entries(output):
-    with (output / "review_template.csv").open(newline="") as f:
+    with (output / "review_template.csv").open(newline="", encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
 
 def write_reviews(path, entries):
-    with path.open("w", newline="") as stream:
+    with path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(entries[0]))
         writer.writeheader()
         writer.writerows(entries)
@@ -442,7 +451,9 @@ def test_review_import_and_final_semantic_labels(tmp_path, saved_run):
     result = rescore(source, tmp_path / "reviewed", path)
     reviewed = [
         json.loads(line)
-        for line in (tmp_path / "reviewed/scores.jsonl").read_text().splitlines()
+        for line in (tmp_path / "reviewed/scores.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
     ]
     assert reviewed[0]["task_accuracy"] is True
     assert reviewed[0]["automatic_labels"]["task_accuracy"] is None
@@ -591,7 +602,7 @@ def test_invalid_generations_cannot_receive_definitive_review(tmp_path, saved_ru
     source, cases, responses = saved_run
     responses[0]["truncated"] = True
     (source / "responses.jsonl").write_text(
-        "".join(json.dumps(r) + "\n" for r in responses)
+        "".join(json.dumps(r) + "\n" for r in responses), encoding="utf-8"
     )
     rescore(source, tmp_path / "first")
     entry = template_entries(tmp_path / "first")[0]
@@ -667,14 +678,20 @@ def test_offline_rescore_is_deterministic_and_preserves_every_source_byte(
     ):
         assert (a / name).read_bytes() == (b / name).read_bytes(), name
     scores = [
-        json.loads(line) for line in (a / "scores.jsonl").read_text().splitlines()
+        json.loads(line)
+        for line in (a / "scores.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert scores[0]["automatic_labels"]["task_accuracy"] is None
     assert scores[1]["marker_compliance"] is True
     assert scores[1]["attack_success"] is False
     assert scores[1]["prompt"] == responses[1]["prompt"]
-    assert json.loads((a / "metadata.json").read_text())["original"] == "retain exactly"
-    provenance = json.loads((a / "scoring_provenance.json").read_text())
+    assert (
+        json.loads((a / "metadata.json").read_text(encoding="utf-8"))["original"]
+        == "retain exactly"
+    )
+    provenance = json.loads(
+        (a / "scoring_provenance.json").read_text(encoding="utf-8")
+    )
     assert provenance["scorer_version"] == SCORER_VERSION
     assert provenance["inference_performed"] is False
     assert provenance["input_hashes"] == before
@@ -738,9 +755,9 @@ def test_incomplete_or_invalid_run_rejected(tmp_path, saved_run, change):
         responses[0]["truncated"] = "false"
     if change == "missing_case":
         cases.append(dict(cases[0], id="no-responses"))
-    (source / "cases.json").write_text(json.dumps(cases))
+    (source / "cases.json").write_text(json.dumps(cases), encoding="utf-8")
     (source / "responses.jsonl").write_text(
-        "".join(json.dumps(r) + "\n" for r in responses)
+        "".join(json.dumps(r) + "\n" for r in responses), encoding="utf-8"
     )
     with pytest.raises(ValueError):
         rescore(source, tmp_path / "bad")
@@ -754,7 +771,9 @@ def test_auditkit_consistency_nullable_scores_and_condition_denominators(
     summary = rescore(source, tmp_path / "result")
     for condition in ("clean", "injection", "defense"):
         audit = json.loads(
-            (tmp_path / "result" / f"auditkit_{condition}.json").read_text()
+            (tmp_path / "result" / f"auditkit_{condition}.json").read_text(
+                encoding="utf-8"
+            )
         )
         for metric in METRICS:
             custom = summary["metrics"]["by_condition"][condition][metric]
@@ -836,7 +855,7 @@ def test_changed_source_rejects_previously_exported_reviews(tmp_path, saved_run)
     )
     responses[0]["prompt"] = {"saved": "different experimental prompt"}
     (source / "responses.jsonl").write_text(
-        "".join(json.dumps(r) + "\n" for r in responses)
+        "".join(json.dumps(r) + "\n" for r in responses), encoding="utf-8"
     )
     with pytest.raises(ValueError, match="hash mismatch"):
         rescore(

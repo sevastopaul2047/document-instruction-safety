@@ -26,7 +26,9 @@ VIEWER = (
 def load_selection(path=None, refresh=False):
     path = Path(path or ROOT / "data/fixtures/piarena_selected.jsonl")
     records = [
-        json.loads(line) for line in path.read_text().splitlines() if line.strip()
+        json.loads(line)
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
     ]
     if refresh:
         with urlopen(VIEWER, timeout=30) as response:

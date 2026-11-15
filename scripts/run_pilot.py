@@ -29,7 +29,7 @@ def main():
         help="New directory; existing runs are never overwritten",
     )
     args = parser.parse_args()
-    config = yaml.safe_load(args.config.read_text())
+    config = yaml.safe_load(args.config.read_text(encoding="utf-8"))
     if args.model == "transformers" and args.data == "synthetic":
         parser.error("Use PIArena data for the real pilot")
     if args.output.exists():
@@ -37,7 +37,9 @@ def main():
     cases = (
         build_cases(load_selection(refresh=args.refresh))
         if args.data == "piarena"
-        else json.loads((ROOT / "data/fixtures/synthetic.json").read_text())
+        else json.loads(
+            (ROOT / "data/fixtures/synthetic.json").read_text(encoding="utf-8")
+        )
     )
     cases = curate(cases)
     model = MockModel() if args.model == "mock" else TransformersModel(config)

@@ -1,0 +1,7 @@
+# Auto-detect text files and normalize line endings on checkout
+* text=auto
+
+# Pin exact LF line endings for data fixtures and jsonl/json files so raw byte hashes remain stable
+data/fixtures/* text eol=lf
+*.jsonl text eol=lf
+*.json text eol=lf
